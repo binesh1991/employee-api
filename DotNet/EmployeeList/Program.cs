@@ -9,6 +9,9 @@ namespace EmployeeList
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            // Allow the React app to connect
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowReactApp",

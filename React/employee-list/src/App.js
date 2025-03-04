@@ -1,16 +1,26 @@
 import './App.css';
 import React, { useState } from 'react';
-import ReactJsonView from '@microlink/react-json-view'
+import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
 function App() {
   const [file, setFile] = useState(null);
-  const [json, setJson] = useState(null);
+  const [items, setItems] = useState([]);
 
   const handleFileChange = (e) => {
     if (e.target.files) {
-      setFile(e.target.files[0]);
+      setFile(e.target.files[0]); // Store the path for the local CSV file
     }
   };
+
+  // This function will recursively convert the JSON received from the server
+  // to a format that the tree view component can process
+  function transformHierarchy(obj) {
+    return {
+      id: obj.employeeId,
+      label: `${obj.employeeId} - ${obj.name}`,
+      children: obj.reports ? obj.reports.map(transformHierarchy) : []
+    };
+  }
   
   const handleUpload = async () => {
     let fileData = new FileReader();
@@ -19,11 +29,14 @@ function App() {
       const httpOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ csvContent: fileData.result })
+        body: JSON.stringify({ csvContent: fileData.result }) // The CSV data is sent in the POST request body
       };
-      fetch('http://localhost:5067/employeelist', httpOptions)
+      fetch('http://localhost:5067/employeelist', httpOptions) // Perform the call to the endpoint
           .then(response => response.json())
-          .then(data => setJson(() => data))
+          .then(data => {
+            let jsonArray = data.map(transformHierarchy);
+            setItems(() => jsonArray)
+          })
           .catch(error => console.error("Error occured:", error));
     }
 
@@ -39,7 +52,7 @@ function App() {
           className="submit"
         >Upload</button>
       </div>
-      {json != null && <ReactJsonView src={json} displayDataTypes="false" />}
+      <RichTreeView items={items} />
     </div>
   );
 }

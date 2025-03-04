@@ -13,10 +13,11 @@ namespace EmployeeList.Controllers
         {
             List<Employee> employees = new List<Employee>();
 
+            // Split the CSV data and generate the hierarchy of employees
             string[] records = csvContent.CsvContent.Split("\n", StringSplitOptions.None);
-            for (int i = 1; i < records.Length; i++)
+            for (int i = 1; i < records.Length; i++) // Start from index 1 to ignore the header row
             {
-                if (string.IsNullOrWhiteSpace(records[i]))
+                if (string.IsNullOrWhiteSpace(records[i])) // Ignore empty rows
                 {
                     continue;
                 }
@@ -27,11 +28,12 @@ namespace EmployeeList.Controllers
                 employees.Add(empl);
             }
 
-            List<Employee> hierarchical = GenerateHierarchy(employees, null);
+            List<Employee> hierarchical = GenerateHierarchy(employees, null); // Recursively generate the employee hierarchy
 
             return Ok(JsonSerializer.Serialize(hierarchical));
         }
 
+        // Link employees with the manager using the respective IDs and generate the tree
         private static List<Employee> GenerateHierarchy(List<Employee> employees, int? mgrId)
         {
             return employees
